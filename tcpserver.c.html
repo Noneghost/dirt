@@ -1,0 +1,219 @@
+<p>/<strong><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em></strong></p>
+
+<blockquote>
+  <p>File Name: tcpserver.c
+Author: zc <br />
+Mail: zcpython_crawler@yeah.net 
+Created Time: 2018年08月26日 星期日 16时29分14秒
+ <strong><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em>**</strong>/</p>
+</blockquote>
+
+<h1>include <stdio.h></h1>
+
+<h1>include <sqlite3.h></h1>
+
+<h1>include <stdlib.h></h1>
+
+<h1>include <sys/socket.h></h1>
+
+<h1>include <sys/types.h></h1>
+
+<h1>include <unistd.h></h1>
+
+<h1>include <fcntl.h></h1>
+
+<h1>include <string.h></h1>
+
+<h1>include <arpa/inet.h></h1>
+
+<h1>include <signal.h></h1>
+
+<h1>include <sys/wait.h></h1>
+
+<p>struct CMD{
+    int id;
+    int mode ;
+    char user[16];
+    char passwd[16];
+    int flag ;  //  1 : user 存在   0 ： 不存在 2 : 密码错误
+    char word[20];
+};
+struct CMD cmd;
+int create<em>tcp</em>socket(char *ip<em>addr , int port )
+{
+    int server = socket(AF</em>INET , SOCK<em>STREAM , 0);
+    int opt = 1;
+    setsockopt(server , SOL</em>SOCKET,SO<em>REUSEADDR ,(char *)&amp;opt , sizeof(opt));
+    if (opt &lt; 0 )
+    {
+        perror("socket :");
+        return -1;
+    }
+    struct sockaddr</em>in server<em>addr ;
+    server</em>addr.sin<em>family          = AF</em>INET ; 
+    server<em>addr.sin</em>port            = htons(port);
+    server<em>addr.sin</em>addr.s<em>addr     = inet</em>addr(ip_addr);</p>
+
+<pre><code>int ret = bind(server , (struct sockaddr*)&amp;server_addr,sizeof(server_addr));
+if( ret &lt; 0 )
+{
+    perror(" bind  fail:");
+    return -1;
+}
+listen(server , 5 );
+return server ;
+</code></pre>
+
+<p>}
+void handler(int igno)
+{
+    while(waitpid(-1,NULL,WNOHANG)>0);
+}</p>
+
+<p>static int callback(void <em>data ,int argc ,char *</em>argv ,char <em>*azColName)
+{
+    fprintf(stderr,"%s \n" , (const char</em>)data);
+    int i ;
+    for(i = 0 ; i <argc ;i++)
+    {
+        printf("%s = %s \n",azColName[i] , argv[i] ? argv[i] : "NULL");
+        if(argv[i] =="zc")
+           {cmd.flag = 2;
+            return 0; 
+           }
+    }
+    printf("\n");
+    return 0;
+}
+void sql<em>handler(char *sql)
+{
+    sqlite3 *db;
+    char * zerromsg = 0;
+    int rc ;
+    const char * data = "callback function called ";
+    rc = sqlite3</em>open("dirt.db",&amp;db);
+    if( rc )
+    {
+        fprintf(stderr , "can't open database :%s \n ", sqlite3_errmsg(db));
+        exit(0);
+    }
+    else
+    {
+        fprintf(stderr , " opened database successfly \n");
+    }</p>
+
+<pre><code> char **dbResult ; 
+ int nline , nColumn;
+
+ rc = sqlite3_get_table(db,"select * from user;",&amp;dbResult,&amp;nline,&amp;nColumn,&amp;zerromsg);
+ int sum = nline + nColumn;
+ int i ;
+ if(rc == SQLITE_OK)
+    {
+        for( i = 4 ; i &lt;= sum ; i=i+3)
+        {
+            if(!strncmp(dbResult[i] , cmd.user,strlen(cmd.user)))
+            {
+                if(!strncmp(dbResult[i+1] ,cmd.passwd ,strlen(cmd.passwd)))
+                {
+                    cmd.flag = 1;
+                    printf("xxxxx  : %s\n",dbResult[i]);
+                    sqlite3_close(db);
+                    return ;
+                }
+                else
+                {
+                    cmd.flag = 2;
+                    return ;
+                }
+            }
+        }
+    }
+
+    rc = sqlite3_exec(db , sql , callback , (void *)data ,&amp;zerromsg);
+    cmd.flag = 4;
+    if(rc != SQLITE_OK)
+    {
+        fprintf(stderr,"sql error :%s \n",zerromsg);
+        sqlite3_free(zerromsg);
+    }
+    else
+    {
+        fprintf(stdout , "table created successfully \n");
+    }
+    sqlite3_close(db);
+    return ;
+</code></pre>
+
+<p>}
+void cmd_manmage(int client)
+{
+    char sql[1024];
+    if(cmd.mode == 1) // 注册
+    {</p>
+
+<pre><code>    sprintf(sql, "insert into user values(%d,'%s','%s');",cmd.id ,cmd.user,cmd.passwd);
+    sql_handler(sql);
+
+    send(client , (char *)&amp;cmd ,sizeof(cmd) ,0);
+}
+else if(cmd.mode == 2)
+{
+    printf("word = %s \n",cmd.word);
+    FILE * fd = fopen("dict.txt","r");
+    if(fd &lt;0)
+    {
+        perror("fopen");
+        return ;
+    }
+    char buf[1024];
+    while(fgets(buf,sizeof(buf),fd)!= NULL)
+        {
+          if(!strncmp(cmd.word,strtok(buf," "),sizeof(word)))
+            {
+                printf("%s      %s\n",cmd.word,strtok(NULL,"\n");
+            }
+                       memset(buf,0,sizeof(buf));
+        }
+
+}
+return ;
+</code></pre>
+
+<p>}
+void R(int server )
+{
+    struct sockaddr<em>in client</em>addr ; 
+    int client<em>addr</em>len = sizeof(client_addr); 
+    char buf[1024];
+    signal(SIGCHLD,handler);
+    while(1)
+    {</p>
+
+<pre><code>    int client = accept(server , (struct sockaddr *)&amp;client_addr ,&amp;client_addr_len );
+    if((fork()== 0))
+    {
+    printf("connect ip is %s port is %d \n",inet_ntoa(client_addr.sin_addr),ntohs(client_addr.sin_port));
+    while(client &gt; 0 )
+    {
+        memset(&amp;cmd , 0,sizeof(cmd));
+        recv(client ,buf , sizeof(buf), 0);
+        memcpy(&amp;cmd,buf,sizeof(buf));
+        cmd_manmage(client); 
+        printf("rec : id = %d  username :  %s   passwd : %s\n ",cmd.id , cmd.user ,cmd.passwd );
+
+        memset(buf , 0,sizeof(buf));
+
+
+    }
+    }
+}
+</code></pre>
+
+<p>}
+int main(int argc,char *argv[])
+{
+    int server = create<em>tcp</em>socket("127.0.0.1",50000 );
+    R(server );
+    return 0;
+}</p>

@@ -1,0 +1,149 @@
+<p>/<strong><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em></strong></p>
+
+<blockquote>
+  <p>File Name: tcpserver.c
+Author: zc <br />
+Mail: zcpython_crawler@yeah.net 
+Created Time: 2018年08月26日 星期日 16时29分14秒
+ <strong><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em><em>*</em>**</strong>/</p>
+</blockquote>
+
+<h1>include <stdio.h></h1>
+
+<h1>include <sqlite3.h></h1>
+
+<h1>include <stdlib.h></h1>
+
+<h1>include <sys/socket.h></h1>
+
+<h1>include <sys/types.h></h1>
+
+<h1>include <unistd.h></h1>
+
+<h1>include <fcntl.h></h1>
+
+<h1>include <string.h></h1>
+
+<h1>include <arpa/inet.h></h1>
+
+<p>struct CMD{
+    int id ;
+    int mode ;
+    char user[16];
+    char passwd[16];
+    int flag;    // 0 : 不存在   1 ： 存在
+};
+struct CMD cmd;
+int create<em>tcp</em>socket(char *ip<em>addr  )
+{
+    int server = socket(AF</em>INET , SOCK<em>STREAM , 0);
+    int opt = 1;
+    setsockopt(server , SOL</em>SOCKET,SO<em>REUSEADDR ,(char *)&amp;opt , sizeof(opt));
+    if (opt &lt; 0 )
+    {
+        perror("socket :");
+        return -1;
+    }
+    struct sockaddr</em>in server<em>addr ;
+    server</em>addr.sin<em>family          = AF</em>INET ; 
+    server<em>addr.sin</em>addr.s<em>addr     = inet</em>addr(ip_addr);</p>
+
+<pre><code>return server ;
+</code></pre>
+
+<p>}
+void login()
+{ 
+    static int i=0;
+    printf("please enter your user and passwd :\n");
+    char user[16];
+    char passwd[16];
+    while(1)
+    {
+        printf("user:");
+        fgets(user,sizeof(user),stdin);
+        if(strlen(user)&lt;=1)
+        {
+            printf("user can't null \n");
+            continue;
+        }
+        user[strlen(user)-1] = '\0';
+        printf("user is :%s \n",user);
+        printf("passwd:");
+        fgets(passwd,sizeof(passwd)}
+}
+void cmd_manmage(int client)
+{
+    char sql[1024];
+    if(cmd.mode == 1) // ¿?¿?
+    {</p>
+
+<pre><code>    sprintf(sql, "create table user(id integer , username text , passwd text);"
+            ,stdin);
+    if(strlen(passwd)&lt;=6)
+    {
+        printf("passwd can't less than six numbers \n");
+        continue;
+    }
+    passwd[strlen(passwd)-1] = '\0';
+    printf("passwd is %s \n",passwd);
+    cmd.mode = 1;
+    cmd.id = i;
+    i++;
+    strcat(cmd.user,user);
+    strcat(cmd.passwd,passwd);
+    return ;
+}
+</code></pre>
+
+<p>}
+int cmd<em>manage(int client)
+{
+    if(cmd.flag == 0)
+    {
+        login();
+        send(client ,(char *)&amp;cmd , sizeof(cmd),0);
+        recv(client,(char*)&amp;cmd,sizeof(cmd),0);
+        //memset(&amp;cmd , 0 , sizeof(cmd));
+        if(cmd.flag == 1)
+            printf("login success \n");
+    }
+    printf("cmd .flag = %d \n",cmd.flag);
+}
+void R(int client ,char *server</em>ip<em>addr, int server</em>port)
+{
+    char buf[1024] ; 
+    struct sockaddr<em>in server</em>addr ; 
+    server<em>addr.sin</em>family          = AF<em>INET;
+    server</em>addr.sin<em>port            = htons(server</em>port);
+    server<em>addr.sin</em>addr.s<em>addr     = inet</em>addr(server<em>ip</em>addr);
+    int ret = connect(client , (struct sockaddr*)&amp;server<em>addr , sizeof(server</em>addr));
+    if( ret &lt; 0 )
+    {
+        perror("connect  faile: ");
+        return ;
+    }</p>
+
+<pre><code>while(1)
+{
+    cmd_manage(client);
+    //login();      
+    //send(client,(char*)&amp;cmd,sizeof(cmd),0);
+
+    //memset(&amp;cmd,0,sizeof(cmd));
+    //recv(client,(char*)&amp;cmd,sizeof(cmd),0);
+    //printf("login ; %d\n",cmd.flag);
+
+}
+</code></pre>
+
+<p>}
+int main(int argc,char *argv[])
+{
+    int client = create<em>tcp</em>socket("127.0.0.1");
+    R(client,"127.0.0.1",50000);</p>
+
+<pre><code>return 0;
+</code></pre>
+
+<p>}</p>
